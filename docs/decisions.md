@@ -7,6 +7,25 @@
 
 ---
 
+## 2026-08-29 — 대화 모델을 Gemini 3.6 Flash 로 (2.5 Flash 폐기됨)
+
+**정한 것** — `gemini-2.5-flash` → `gemini-3.6-flash`. 모델 이름을 `GEMINI_MODEL` 환경변수로도 바꿀 수 있게 코드를 고쳤다. 환경변수가 없으면 기본값을 쓴다.
+
+**왜** — Day 3 첫 배포에서 실제 호출을 해보니 구글이 이렇게 답했다.
+
+> This model models/gemini-2.5-flash is no longer available to new users.
+> Please update your code to use models/gemini-3.6-flash.
+
+2.5 Flash 는 신규 사용자에게 더 이상 제공되지 않는다. 처음 계획을 세울 때의 정보가 그 사이에 낡았다.
+
+**같이 배운 것** — 모델 이름은 생각보다 자주 바뀐다. 그래서 앞으로 같은 일이 생기면 **코드를 안 고치고 Vercel 환경변수만 바꿔도** 되게 해뒀다. 오류 메시지에도 어떤 모델을 썼는지 함께 찍히게 했다.
+
+**API 방식은 바꾸지 않았다** — 구글이 새 방식(Interactions API)을 함께 권했지만, 기존 방식(`generateContent`)도 계속 지원된다. 고장 하나를 고치는 데 구조를 갈아엎지 않는다.
+
+**다시 볼 조건** — **Day 4 에서 한 번 검토한다.** Interactions API 는 대화 기록을 서버가 대신 들고 있어(`previous_interaction_id`), 우리가 Day 4 에 하려는 "문맥 잇기"를 더 간단하게 만들 수도 있다. 그때 비교해 보고 정한다. 또는 3.6 이 다시 낡으면 환경변수만 바꾼다.
+
+---
+
 ## 2026-08-29 — 문서를 저장소에 두기로
 
 **정한 것** — 계획서와 지침을 아티팩트가 아니라 저장소의 `.md` 로 관리한다. `CLAUDE.md` 는 세션 시작 시 자동으로 읽히는 행동 지침, `docs/` 는 참고 문서.

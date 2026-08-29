@@ -2,7 +2,10 @@
 // 화면 쪽 코드가 아니라서, 여기 있는 API 키는 사용자에게 보이지 않습니다.
 // 이것이 이 파일이 존재하는 유일한 이유입니다.
 
-const MODEL = 'gemini-2.5-flash';
+// 모델 이름은 바뀔 수 있습니다. 실제로 2026-08-29 에 한 번 바뀌었습니다.
+// 그래서 Vercel 환경변수 GEMINI_MODEL 로도 바꿀 수 있게 해뒀습니다.
+// 환경변수가 없으면 아래 기본값을 씁니다.
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 // 봇의 성격을 정하는 지시문. 3주차에 본격적으로 다듬습니다.
@@ -56,7 +59,7 @@ module.exports = async (req, res) => {
 
     if (!upstream.ok) {
       const message = (data && data.error && data.error.message) || `HTTP ${upstream.status}`;
-      return res.status(upstream.status).json({ error: `Gemini 오류 — ${message}` });
+      return res.status(upstream.status).json({ error: `Gemini 오류 (모델: ${MODEL}) — ${message}` });
     }
 
     const parts =

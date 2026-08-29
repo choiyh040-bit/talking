@@ -31,4 +31,4 @@
 
 ## 기술
 
-브라우저 음성 인식 · Gemini 2.5 Flash · 브라우저 실시간 아바타 · Vercel
+브라우저 음성 인식 · Gemini 3.6 Flash · 브라우저 실시간 아바타 · Vercel
