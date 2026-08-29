@@ -40,7 +40,7 @@ awk '
 
 if [ -d docs/history ] && ls docs/history/[0-9]*.md >/dev/null 2>&1; then
   echo
-  echo "--- 지난 분기점 기록 ---"
+  echo "--- 지난 개발일지 ---"
   for f in docs/history/[0-9]*.md; do
     echo "  $f — $(head -n 1 "$f" | sed 's/^# *//')"
   done

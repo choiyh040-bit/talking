@@ -14,20 +14,20 @@
 | [`docs/overview.md`](./docs/overview.md) | 밑그림 — 무엇을 만드는가. 잘 바뀌지 않습니다 |
 | [`docs/plan.md`](./docs/plan.md) | 하루 단위 할 일. **매일 바뀝니다** |
 | [`docs/decisions.md`](./docs/decisions.md) | 결정 기록 — 무엇을 왜 정했는가 |
-| [`docs/history/`](./docs/history/) | 분기점 기록 — 실제로 어떻게 진행됐는가 |
+| [`docs/history/`](./docs/history/) | 개발일지 — 실제로 어떻게 진행됐는가 |
 
 ## 명령어
 
 | 명령 | 하는 일 |
 |---|---|
 | `/today` | 오늘의 할 일 불러오기 |
-| `/milestone` | 끝낸 작업 덩어리를 분기점으로 기록하고 푸시 |
+| `/milestone` | 끝낸 마디를 개발일지로 기록하고 푸시 |
 
 세션을 열면 `.claude/hooks/session-start.sh` 가 현재 상태와 오늘 할 일을 자동으로 읽어옵니다.
 
 ## 상태
 
-아직 코드 없음. Day 1 진행 중입니다.
+Day 3 완료. https://talking-nu.vercel.app 에서 영어로 대화가 됩니다. 음성과 아바타는 아직입니다.
 
 ## 기술
 
