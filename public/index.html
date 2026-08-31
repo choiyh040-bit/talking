@@ -50,6 +50,12 @@
     white-space: pre-wrap; word-break: break-word;
   }
   .typing { color: var(--muted); font-style: italic; }
+  .meta {
+    align-self: flex-start; font-size: 11px; color: var(--muted);
+    margin: -6px 0 0 4px; letter-spacing: .02em;
+  }
+  .meta.slow { color: #A85B00; }
+  @media (prefers-color-scheme: dark) { .meta.slow { color: #E8B173; } }
 
   form {
     display: flex; gap: 8px; padding: 12px 16px 16px;
@@ -139,6 +145,12 @@
       } else {
         history.push({ role: 'model', text: data.reply });
         add('msg bot', data.reply);
+        if (typeof data.ms === 'number') {
+          var sec = (data.ms / 1000).toFixed(1);
+          // 3초가 우리가 정한 합격선입니다. 넘으면 눈에 띄게 표시합니다.
+          var el = add('meta' + (data.ms > 3000 ? ' slow' : ''), sec + '초');
+          el.title = data.model + ' · 생각 ' + data.thinking;
+        }
       }
     } catch (err) {
       waiting.remove();
