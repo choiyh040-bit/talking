@@ -28,6 +28,13 @@
   header {
     padding: 14px 16px; border-bottom: 1px solid var(--line);
     background: var(--surface); flex: none;
+    display: flex; align-items: center; gap: 12px;
+  }
+  header > div { flex: 1; min-width: 0; }
+  .ghost {
+    flex: none; background: transparent; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 7px 13px; font-size: 13px; font-weight: 500;
   }
   header h1 { margin: 0; font-size: 16px; font-weight: 600; }
   header p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
@@ -64,8 +71,11 @@
 <body>
 
 <header>
-  <h1>토킹 튜터</h1>
-  <p>Day 2 · 글자로 먼저 대화해 봅니다</p>
+  <div>
+    <h1>토킹 튜터</h1>
+    <p>Day 4 · 대화가 이어집니다</p>
+  </div>
+  <button type="button" id="reset" class="ghost">새 대화</button>
 </header>
 
 <div id="log">
@@ -82,6 +92,11 @@
   var form = document.getElementById('form');
   var input = document.getElementById('input');
   var send = document.getElementById('send');
+  var reset = document.getElementById('reset');
+
+  // 지금까지의 대화. 이 배열이 봇의 "기억"입니다.
+  // 구글은 아무것도 기억하지 않습니다. 매번 이걸 통째로 다시 들려줍니다.
+  var history = [];
 
   function add(cls, text) {
     var el = document.createElement('div');
@@ -102,30 +117,44 @@
     input.disabled = true;
     send.disabled = true;
 
+    // 보내기 전에 기록에 넣습니다.
+    history.push({ role: 'user', text: text });
+
     var waiting = add('msg bot typing', '...');
 
     try {
       var res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
+        body: JSON.stringify({ messages: history })
       });
       var data = await res.json();
       waiting.remove();
 
       if (!res.ok || data.error) {
         // 무엇이 잘못됐는지 화면에 그대로 보여줍니다. 그래야 고칠 수 있습니다.
+        // 실패한 말은 기록에서 빼야 다음 요청이 꼬이지 않습니다.
+        history.pop();
         add('err', '문제가 생겼습니다.\n' + (data.error || ('HTTP ' + res.status)) + (data.debug ? '\n\n' + data.debug : ''));
       } else {
+        history.push({ role: 'model', text: data.reply });
         add('msg bot', data.reply);
       }
     } catch (err) {
       waiting.remove();
+      history.pop();
       add('err', '서버에 연결하지 못했습니다.\n' + err.message);
     }
 
     input.disabled = false;
     send.disabled = false;
+    input.focus();
+  });
+
+  reset.addEventListener('click', function () {
+    history = [];
+    log.innerHTML = '';
+    add('sys', '새 대화를 시작합니다. 앞의 얘기는 잊었습니다.');
     input.focus();
   });
 </script>

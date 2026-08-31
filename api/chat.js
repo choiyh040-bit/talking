@@ -8,6 +8,11 @@
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash';
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
+// 대화가 길어지면 매번 보내는 양도 같이 늘어납니다.
+// 느려지고 무료 한도도 빨리 닳으므로, 최근 것만 보냅니다.
+const MAX_MESSAGES = 20;   // 최근 20개 (주고받기 10번)
+const MAX_CHARS = 1000;    // 한 번에 보낼 수 있는 글자 수
+
 // 봇의 성격을 정하는 지시문. 3주차에 본격적으로 다듬습니다.
 const SYSTEM_PROMPT = [
   'You are a warm, encouraging English conversation partner for a Korean learner.',
@@ -35,9 +40,33 @@ module.exports = async (req, res) => {
   if (typeof body === 'string') {
     try { body = JSON.parse(body); } catch (e) { body = {}; }
   }
-  const text = ((body && body.text) || '').trim();
-  if (!text) {
+  body = body || {};
+
+  // 화면에서 지금까지의 대화를 통째로 보내줍니다.
+  // 옛 화면이 캐시에 남아 text 하나만 보낼 수도 있어 그 경우도 받습니다.
+  let messages = Array.isArray(body.messages) ? body.messages : null;
+  if (!messages && typeof body.text === 'string') {
+    messages = [{ role: 'user', text: body.text }];
+  }
+  if (!messages || messages.length === 0) {
+    return res.status(400).json({ error: '보낼 대화가 비어 있습니다.' });
+  }
+
+  // 모양이 맞는 것만 골라내고, 너무 긴 것은 잘라냅니다.
+  const clean = messages
+    .filter((m) => m && typeof m.text === 'string' && m.text.trim())
+    .map((m) => ({
+      role: m.role === 'model' ? 'model' : 'user',
+      text: m.text.trim().slice(0, MAX_CHARS),
+    }))
+    .slice(-MAX_MESSAGES);
+
+  if (clean.length === 0) {
     return res.status(400).json({ error: '보낼 문장이 비어 있습니다.' });
+  }
+  // 마지막은 반드시 사용자 차례여야 합니다.
+  if (clean[clean.length - 1].role !== 'user') {
+    return res.status(400).json({ error: '마지막 차례가 사용자 발언이 아닙니다.' });
   }
 
   try {
@@ -49,9 +78,10 @@ module.exports = async (req, res) => {
       },
       body: JSON.stringify({
         system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-        // Day 2 에서는 방금 한 말 하나만 보냅니다.
-        // 그래서 봇은 앞 대화를 기억하지 못합니다. Day 4 에서 고칩니다.
-        contents: [{ role: 'user', parts: [{ text }] }],
+        // Day 4 부터는 지금까지의 대화를 통째로 보냅니다.
+        // Gemini 는 대화를 기억하지 않습니다. 매번 처음부터 읽습니다.
+        // "기억"처럼 보이는 것은, 우리가 매번 전체를 다시 들려주기 때문입니다.
+        contents: clean.map((m) => ({ role: m.role, parts: [{ text: m.text }] })),
       }),
     });
 
